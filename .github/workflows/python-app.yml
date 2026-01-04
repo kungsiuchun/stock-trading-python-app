@@ -2,8 +2,8 @@ name: 15-Min Stock Update
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # 每 15 分鐘執行一次
-  workflow_dispatch:      # 允許手動觸發測試
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -16,13 +16,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: 'pip' # 開啟快取，讓下次跑 Action 更快
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run script
         env:
-          API_KEY: ${{ secrets.POLYGON_API_KEY }} # 從 Secret 讀取金鑰
+          # 如果你的 python 腳本有用 os.getenv("STOCK_API_KEY")，這裡要對應
+          STOCK_API_KEY: ${{ secrets.STOCK_API_KEY }} 
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python script.py
 
       - name: Commit and Push
@@ -30,5 +35,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add tickers.csv
+          # 如果沒有變動就不 commit，避免報錯
           git commit -m "Update stock data [skip ci]" || echo "No changes to commit"
           git push
