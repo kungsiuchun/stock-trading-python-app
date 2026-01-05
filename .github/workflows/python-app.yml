@@ -2,7 +2,7 @@ name: 15-Min Stock Update
 
 on:
   schedule:
-    - cron: '*/60 * * * *'
+    - cron: '0 22 * * 1-5'
   workflow_dispatch:
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add tickers.csv
+          git add dow30.csv
           # 如果沒有變動就不 commit，避免報錯
           git commit -m "Update stock data [skip ci]" || echo "No changes to commit"
           git push
