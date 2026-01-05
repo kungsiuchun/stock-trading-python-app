@@ -26,7 +26,7 @@ jobs:
       - name: Run script
         env:
           # 如果你的 python 腳本有用 os.getenv("STOCK_API_KEY")，這裡要對應
-          POLYGON_API_KEY: ${{ env.POLYGON_API_KEY }} 
+          POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }} 
         run: python script.py
 
       - name: Commit and Push
