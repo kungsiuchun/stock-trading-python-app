@@ -16,7 +16,7 @@ DOW_30 = {
 }
 
 fieldnames = ['date', 'T', 'c', 'h', 'l', 'n', 'o', 't', 'v', 'vw']
-output_csv = 'tickers.csv'
+output_csv = 'dow30.csv'
 
 def is_trading_day(dt):
     """檢查是否為週一至週五 (0=週一, 5=週六, 6=週日)"""
@@ -24,7 +24,8 @@ def is_trading_day(dt):
 
 def fetch_daily_data(current_date):
     date_str = current_date.strftime('%Y-%m-%d')
-    url = f'https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/{date_str}?adjusted=true&apiKey={POLYGON_API_KEY}'
+    url = f'hhttps://api.massive.com/v2/aggs/grouped/locale/us/market/stocks/{date_str}?adjusted=true&apiKey={POLYGON_API_KEY}'
+    
     
     try:
         response = requests.get(url)

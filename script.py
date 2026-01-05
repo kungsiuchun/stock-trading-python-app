@@ -26,7 +26,7 @@ if os.path.exists(output_csv):
 
 # --- 如果日期不重複，則調用 API ---
 POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
-url = f'https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/{target_date}?adjusted=true&apiKey={POLYGON_API_KEY}'
+url = f'https://api.massive.com/v2/aggs/grouped/locale/us/market/stocks/{target_date}?adjusted=true&apiKey={POLYGON_API_KEY}'
 
 try:
     response = requests.get(url)
