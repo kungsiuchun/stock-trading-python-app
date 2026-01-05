@@ -1,65 +1,65 @@
 import requests
 import csv
-import time
 import os
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
+
 load_dotenv()
 
-# Variable
-POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
-LIMIT = 1000
+# 1. 自動獲取日期 (預設抓取昨天)
+target_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 
-url = f'https://api.polygon.io/v3/reference/tickers?market=stocks&active=true&order=asc&limit={LIMIT}&sort=ticker&apiKey={POLYGON_API_KEY}'
-
-response = requests.get(url)
-tickers = []
-
-data = response.json()
-
-# print(data)
-# print(data.keys())
-# print(data['next_url'])
-for ticker in data['results']:
-    tickers.append(ticker)
-
-# for next page result
-while 'next_url' in data:
-    print('requesting next page', data['next_url'])
-    
-    # adding time 15s stop here
-    time.sleep(12)
-
-    response = requests.get(data['next_url'] + f'&apiKey={POLYGON_API_KEY}')
-    data = response.json()
-    print(data)
-    for ticker in data['results']:
-        tickers.append(ticker)
-        
-example_ticker = \
-{
-    'ticker': 'PEB', 
-    'name': 'Pebblebrook Hotel Trust', 
-    'market': 'stocks', 'locale': 'us', 
-    'primary_exchange': 'XNYS', 
-    'type': 'CS', 
-    'active': True, 
-    'currency_name': 'usd', 
-    'cik': '0001474098', 
-    'composite_figi': 'BBG000PNBZF5', 
-    'share_class_figi': 'BBG001T5S1M7', 
-    'last_updated_utc': '2025-09-18T06:05:34.657589804Z'
+# 2. 定義 Dow 30 名單
+DOW_30 = {
+    "AAPL", "AMGN", "AMZN", "AXP", "BA", "CAT", "CRM", "CSCO", "CVX", "DIS", 
+    "GS", "HD", "HON", "IBM", "INTC", "JNJ", "JPM", "KO", "MCD", "MMM", 
+    "MRK", "MSFT", "NKE", "NVDA", "PG", "SHW", "TRV", "UNH", "V", "VZ", "WMT"
 }
 
-# Write tickers to CSV with example_ticker schema
-fieldnames = list(example_ticker.keys())
-output_csv = 'tickers.csv'
+output_csv = 'dow30.csv'
 
-with open(output_csv, mode = 'w', newline='', encoding='UTF-8') as f:
-    writer = csv.DictWriter(f, fieldnames=fieldnames)
-    writer.writeheader()
+# --- 檢查日期是否重複 ---
+if os.path.exists(output_csv):
+    with open(output_csv, mode='r', encoding='UTF-8') as f:
+        # 讀取最後幾行或整個檔案內容來檢查日期
+        existing_data = f.read()
+        if target_date in existing_data:
+            print(f"跳過執行：{target_date} 的數據已經存在於 {output_csv} 中。")
+            exit() # 直接結束程式，不調用 API
+
+# --- 如果日期不重複，則調用 API ---
+POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
+url = f'https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/{target_date}?adjusted=true&apiKey={POLYGON_API_KEY}'
+
+try:
+    response = requests.get(url)
+    response.raise_for_status()
+    data = response.json()
+
+    if "results" not in data:
+        print(f"日期 {target_date} 沒有找到數據 (可能是週末或假期)")
+        exit()
+
+    filtered_tickers = [t for t in data['results'] if t.get('T') in DOW_30]
+
+    # 3. 準備寫入 CSV
+    fieldnames = ['date', 'T', 'c', 'h', 'l', 'n', 'o', 't', 'v', 'vw']
+    file_exists = os.path.isfile(output_csv)
+
+    # 使用 'a' (append) 模式附加數據
+    with open(output_csv, mode='a', newline='', encoding='UTF-8') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        
+        # 如果檔案是新建立的，才寫入標題 (Header)
+        if not file_exists:
+            writer.writeheader()
+        
+        for t in filtered_tickers:
+            row = {key: t.get(key, '') for key in fieldnames}
+            row['date'] = target_date 
+            writer.writerow(row)
     
-    for t in tickers:
-        row = {key: t.get(key, '') for key in fieldnames}
-        writer.writerow(row)
-    
-    print(f'Wrote {len(tickers)} rows to {output_csv}')
+    print(f'成功抓取 {target_date} 數據，並附加至 {output_csv}')
+
+except Exception as e:
+    print(f"執行出錯: {e}")
