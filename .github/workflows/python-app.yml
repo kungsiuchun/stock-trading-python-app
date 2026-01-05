@@ -1,4 +1,4 @@
-name: 15-Min Stock Update
+name: Daily DOW 30 Stocks Update
 
 on:
   schedule:
