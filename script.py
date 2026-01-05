@@ -2,9 +2,6 @@ import requests
 import csv
 import os
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # 1. 自動獲取日期 (預設抓取昨天)
 target_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')

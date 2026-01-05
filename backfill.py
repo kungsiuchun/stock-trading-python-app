@@ -3,9 +3,6 @@ import csv
 import time
 import os
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # --- 設定 ---
 START_DATE = datetime(2025, 3, 22)
