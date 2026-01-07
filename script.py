@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timedelta
 
 # 1. 自動獲取日期 (預設抓取昨天)
-target_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+target_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 # 2. 定義 Dow 30 名單
 DOW_30 = {
